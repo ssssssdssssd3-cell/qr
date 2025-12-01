@@ -16,6 +16,7 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
+    
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
@@ -86,25 +87,14 @@
             document.getElementById('orderModal').classList.add('hidden');
         }
 
-        document.getElementById('orderForm').addEventListener('submit', function(e) {
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!currentProduct) return;
             
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
             
-            // TODO: عند ربط Firebase، سيتم إرسال هذه البيانات إلى قاعدة البيانات مباشرة
-            // const orderData = {
-            //     productId: currentProduct.id,
-            //     productName: currentProduct.name,
-            //     price: currentProduct.price,
-            //     customerName: name,
-            //     customerPhone: phone,
-            //     status: 'new',
-            //     timestamp: new Date().toISOString()
-            // };
-            // console.log("New Order:", orderData);
-            // firebase.firestore().collection('orders').add(orderData);
+            
             
             // Show a success message
             const modalContent = document.getElementById('modalContent');
@@ -124,10 +114,6 @@
             const app = document.getElementById('app');
 
             try {
-                // TODO: For live tracking, this page should also make a call to a serverless function
-                // or a backend service to log the scan event for this 'id'.
-                // Example: fetch('https://your-backend.com/track-scan?productId=' + id);
-
                 const response = await fetch('products.json?v=' + new Date().getTime());
                 if (!response.ok) throw new Error("HTTP error " + response.status);
                 const products = await response.json();
@@ -167,7 +153,7 @@
                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                                     <div class="bg-gray-50 h-64 md:h-80 flex items-center justify-center relative p-8">
                                         ${product.image ? `<img src="${product.image}" class="h-full w-full object-contain mix-blend-multiply" />` : 
-                                        `<svg class="h-32 w-32 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`}
+                                        `<svg class="h-32 w-32 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`}
                                     </div>
                                     <div class="p-6 md:p-8">
                                         <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
