@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المتجر الإلكتروني</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .loading { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 1.2rem; color: #666; }
+        .product-card { transition: all 0.2s; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .sidebar-scroll { max-height: calc(100vh - 100px); overflow-y: auto; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-30 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="index.html" class="font-bold text-gray-800 text-xl flex items-center gap-2 hover:text-indigo-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                المتجر
+            </a>
+            <div class="text-sm text-gray-500">
+                <a href="index.html" class="flex items-center gap-1 hover:text-indigo-600">
+                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                   تصفح المنتجات
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div id="app" class="flex-1 max-w-6xl mx-auto w-full p-4 relative">
+        <div class="loading">جاري التحميل...</div>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div id="modalContent" class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transition-all duration-300">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 text-center">طلب المنتج</h3>
+            <p id="modalProductName" class="text-indigo-600 font-bold text-center mb-6 text-sm bg-indigo-50 py-2 rounded-lg"></p>
+            <form id="orderForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">الاسم</label>
+                    <input type="text" id="custName" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="اسمك الكريم">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                    <input type="tel" id="custPhone" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="05xxxxxxxx">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg flex items-center justify-center gap-2">
+                    تأكيد الطلب
+                </button>
+                <button type="button" onclick="closeModal()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition">إلغاء</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentProduct = null;
+
+        function renderImage(p, sizeClass) {
+            if (p.image) {
+                return `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain" onerror="this.onerror=null;this.parentElement.innerHTML='<svg class=\\'h-12 w-12 text-gray-300\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\\'/></svg>';">`;
+            }
+            return `
+                <svg xmlns="http://www.w3.org/2000/svg" class="${sizeClass} text-indigo-300 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            `;
+        }
+
+        function openOrderModal(prodId, prodName, prodPrice) {
+            currentProduct = { id: prodId, name: prodName, price: prodPrice };
+            document.getElementById('modalProductName').innerText = prodName + ' - ' + prodPrice.toFixed(2) + ' ريال';
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!currentProduct) return;
+            
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            
+            // TODO: عند ربط Firebase، سيتم إرسال هذه البيانات إلى قاعدة البيانات مباشرة
+            // const orderData = {
+            //     productId: currentProduct.id,
+            //     productName: currentProduct.name,
+            //     price: currentProduct.price,
+            //     customerName: name,
+            //     customerPhone: phone,
+            //     status: 'new',
+            //     timestamp: new Date().toISOString()
+            // };
+            // console.log("New Order:", orderData);
+            // firebase.firestore().collection('orders').add(orderData);
+            
+            // Show a success message
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="text-center py-8">
+                    <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h3 class="text-lg font-bold text-gray-900">تم إرسال طلبك بنجاح!</h3>
+                    <p class="text-sm text-gray-500 mt-2">سنتواصل معك قريباً لتأكيد الطلب.</p>
+                </div>
+            `;
+            setTimeout(closeModal, 3000);
+        });
+
+        async function load() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const app = document.getElementById('app');
+
+            try {
+                // TODO: For live tracking, this page should also make a call to a serverless function
+                // or a backend service to log the scan event for this 'id'.
+                // Example: fetch('https://your-backend.com/track-scan?productId=' + id);
+
+                const response = await fetch('products.json?v=' + new Date().getTime());
+                if (!response.ok) throw new Error("HTTP error " + response.status);
+                const products = await response.json();
+                
+                if (id) {
+                    const product = products.find(p => p.id == id);
+                    if (!product) { window.location.href = 'index.html'; return; }
+                    
+                    const alternatives = products
+                        .filter(p => p.id != id)
+                        .sort((a, b) => {
+                             const aMatch = (a.usage && product.usage && a.usage === product.usage) ? 1 : 0;
+                             const bMatch = (b.usage && product.usage && b.usage === product.usage) ? 1 : 0;
+                             if (aMatch !== bMatch) return bMatch - aMatch; 
+                             return a.price - b.price;
+                        })
+                        .slice(0, 10);
+
+                    const renderSideItem = (p) => `
+                        <a href="?id=${p.id}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition border border-transparent hover:border-gray-200 group">
+                            <div class="h-10 w-10 rounded bg-white border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                ${renderImage(p, 'h-5 w-5')}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-gray-800 text-sm truncate">${p.name}</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-indigo-600 font-bold text-xs">${Number(p.price).toFixed(2)} ريال</div>
+                                    ${(p.usage && product.usage && p.usage === product.usage) ? '<span class="text-[10px] bg-green-100 text-green-700 px-1 rounded">بديل</span>' : ''}
+                                </div>
+                            </div>
+                        </a>
+                    `;
+
+                    app.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
+                            <div class="md:col-span-2 lg:col-span-3 space-y-6">
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                    <div class="bg-gray-50 h-64 md:h-80 flex items-center justify-center relative p-8">
+                                        ${product.image ? `<img src="${product.image}" class="h-full w-full object-contain mix-blend-multiply" />` : 
+                                        `<svg class="h-32 w-32 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`}
+                                    </div>
+                                    <div class="p-6 md:p-8">
+                                        <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+                                            <div>
+                                                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">${product.name}</h1>
+                                                ${product.usage ? `<span class="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded mt-2 inline-block">${product.usage}</span>` : ''}
+                                            </div>
+                                            <div class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-semibold border border-green-100 shrink-0">متوفر</div>
+                                        </div>
+                                        <div class="flex items-baseline gap-2 mb-8">
+                                            <span class="text-4xl font-bold text-indigo-600">${Number(product.price).toFixed(2)}</span>
+                                            <span class="text-gray-500 font-medium text-lg">ريال</span>
+                                        </div>
+                                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-8">
+                                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">تفاصيل المنتج</h3>
+                                            <p class="text-gray-700 leading-relaxed text-base">${product.description || 'لا يوجد وصف متاح.'}</p>
+                                        </div>
+                                        <button onclick="openOrderModal(${product.id}, '${product.name}', ${product.price})" class="w-full bg-indigo-600 text-white text-center py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 cursor-pointer">
+                                            اطلب الآن
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="md:hidden mt-8">
+                                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-lg">بدائل ومنتجات مشابهة</h3>
+                                    <div class="space-y-2">${alternatives.length ? alternatives.map(renderSideItem).join('') : '<p class="text-gray-400">لا توجد بدائل حالياً</p>'}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="hidden md:block md:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-24">
+                                <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider text-center border-b border-gray-100 pb-2">بدائل ومنتجات مشابهة</h3>
+                                <div class="sidebar-scroll space-y-2">${alternatives.length ? alternatives.map(renderSideItem).join('') : '<p class="text-center text-gray-400 text-sm">لا توجد منتجات.</p>'}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const listHtml = products.map(p => `
+                        <a href="?id=${p.id}" class="product-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full group">
+                            <div class="h-40 bg-gray-50 flex items-center justify-center relative overflow-hidden p-4">
+                                ${renderImage(p, 'h-16 w-16')}
+                            </div>
+                            <div class="p-4 flex-1 flex flex-col">
+                                <h2 class="font-bold text-gray-800 text-lg mb-1 group-hover:text-indigo-600 transition">${p.name}</h2>
+                                <p class="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">${p.description || 'بدون وصف'}</p>
+                                <div class="flex items-center justify-between mt-auto">
+                                    <span class="text-indigo-600 font-bold text-lg">${Number(p.price).toFixed(2)} <span class="text-xs">ريال</span></span>
+                                </div>
+                            </div>
+                        </a>
+                    `).join('');
+
+                    app.innerHTML = `
+                        <div class="mb-8 text-center">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">جميع المنتجات المتوفرة</h2>
+                            <p class="text-gray-500">اختر منتجاً لعرض التفاصيل والبدائل</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${products.length ? listHtml : '<div class="col-span-full text-center py-12"><p class="text-gray-500">المخزون فارغ.</p></div>'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                app.innerHTML = '<div class="text-center p-8 text-red-600">حدث خطأ في تحميل البيانات</div>';
+            }
+        }
+        load();
+    </script>
+</body>
+</html>
