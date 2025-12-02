@@ -17,32 +17,6 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
     
-        <script type="module">
-          import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/+esm';
-          
-          const supabaseUrl = "https://www.google.com/url?sa=E&q=https%3A%2F%2Ffbzwpedchrerznybdmwe.supabase.co";
-          const supabaseKey = "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZiendwZWRjaHJlcnpueWJkbXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTc2OTQsImV4cCI6MjA3ODM3MzY5NH0.4RQaJiAC3ooai3u32dGa309FUjAxhzr2BqMPisUDog0";
-          
-          try {
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            window.supabase = supabase;
-
-            // Track Scan Immediately
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if (id) {
-                supabase.from('scans').insert({ 
-                    product_id: id, 
-                    user_agent: navigator.userAgent || 'unknown' 
-                }).then(({ error }) => {
-                    if (error) console.error("Scan tracking failed (check RLS policies):", error);
-                });
-            }
-          } catch(e) {
-            console.error("Supabase Init Error", e);
-          }
-        </script>
-      
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
