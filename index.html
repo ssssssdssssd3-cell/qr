@@ -141,7 +141,7 @@
 
                 if (error) {
                     console.error("Error sending order:", error);
-                    alert("حدث خطأ أثناء الإرسال. تأكد من أن مسؤول الموقع قام بضبط قواعد الأمان بشكل صحيح.");
+                    alert(`حدث خطأ أثناء الإرسال.\n\nالسبب: ${error.message}\n\nهذا الخطأ يعني غالباً أن قواعد الأمان (RLS) لجدول 'orders' في Supabase غير مُعدة للسماح بالإضافات العامة. يرجى مراجعة التعليمات.`);
                     loading.classList.add('hidden');
                     loading.classList.remove('flex');
                 } else {
