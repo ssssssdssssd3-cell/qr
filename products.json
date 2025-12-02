@@ -14,5 +14,12 @@
     "description": "ماوس مريح 2.4G.",
     "image": "",
     "usage": "إلكترونيات"
+  },
+  {
+    "name": "حط ديد",
+    "price": 200,
+    "description": "",
+    "usage": "ن",
+    "id": 3
   }
 ]
