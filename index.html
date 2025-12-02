@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>المتجر الإلكتروني</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,39 +17,6 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
     
-        <script type="module">
-          import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-          import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-          
-          const firebaseConfig = {"apiKey":"AIzaSyDv0TH25EOd1bPe4wuESz8Z_Kuc8MRWZhs","authDomain":"qr-cod-5ad47.firebaseapp.com","projectId":"qr-cod-5ad47","storageBucket":"qr-cod-5ad47.firebasestorage.app","messagingSenderId":"516830586926","appId":"1:516830586926:web:b6d98c0485605662b9d7bf","measurementId":"G-34W33HKN9Z"};
-          
-          try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            
-            // Track Scan (Page View with ID)
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            
-            if (id) {
-                // Basic scan tracking
-                addDoc(collection(db, "scans"), {
-                    productId: id,
-                    timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent
-                }).then(() => console.log("Scan tracked"));
-                
-                // Expose db to window for the order form
-                window.firebaseDb = db;
-                window.addDoc = addDoc;
-                window.collection = collection;
-                window.serverTimestamp = serverTimestamp;
-            }
-          } catch(e) {
-            console.error("Firebase Init Error", e);
-          }
-        </script>
-      
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
@@ -76,7 +43,7 @@
 
     <!-- Order Modal -->
     <div id="orderModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div id="modalContent" class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transition-all duration-300">
+        <div id="modalContent" class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transition-all duration-300 relative">
             <h3 class="text-lg font-bold text-gray-900 mb-4 text-center">طلب المنتج</h3>
             <p id="modalProductName" class="text-indigo-600 font-bold text-center mb-6 text-sm bg-indigo-50 py-2 rounded-lg"></p>
             <form id="orderForm" class="space-y-4">
@@ -88,11 +55,15 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
                     <input type="tel" id="custPhone" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="05xxxxxxxx">
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg flex items-center justify-center gap-2">
+                <button id="submitBtn" type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg flex items-center justify-center gap-2">
                     تأكيد الطلب
                 </button>
                 <button type="button" onclick="closeModal()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition">إلغاء</button>
             </form>
+            <div id="loadingOverlay" class="absolute inset-0 bg-white/80 hidden flex-col items-center justify-center rounded-xl z-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-2"></div>
+                <p class="text-sm font-bold text-indigo-600">جاري الإرسال...</p>
+            </div>
         </div>
     </div>
 
@@ -101,7 +72,7 @@
 
         function renderImage(p, sizeClass) {
             if (p.image) {
-                return `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain" onerror="this.onerror=null;this.parentElement.innerHTML='<svg class=\\'h-12 w-12 text-gray-300\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\\'/></svg>';">`;
+                return `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain" onerror="this.onerror=null;this.parentElement.innerHTML='<svg class=\\'h-12 w-12 text-gray-300\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\\'/></svg>';">`;
             }
             return `
                 <svg xmlns="http://www.w3.org/2000/svg" class="${sizeClass} text-indigo-300 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,6 +89,7 @@
 
         function closeModal() {
             document.getElementById('orderModal').classList.add('hidden');
+            document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
         document.getElementById('orderForm').addEventListener('submit', async function(e) {
@@ -126,37 +98,42 @@
             
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
+            const loading = document.getElementById('loadingOverlay');
             
-            
-            // Firebase Order Submission
-            if (window.firebaseDb) {
-                try {
-                    await window.addDoc(window.collection(window.firebaseDb, "orders"), {
-                        productId: currentProduct.id,
-                        productName: currentProduct.name,
-                        price: currentProduct.price,
-                        customerName: name,
-                        customerPhone: phone,
-                        status: 'new',
-                        timestamp: window.serverTimestamp()
-                    });
-                    console.log("Order sent to Firebase");
-                } catch(e) {
-                    console.error("Error sending order", e);
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            if (window.supabase) {
+                const { error } = await window.supabase.from('orders').insert({
+                    product_id: String(currentProduct.id),
+                    product_name: currentProduct.name,
+                    price: currentProduct.price,
+                    customer_name: name,
+                    customer_phone: phone,
+                    status: 'new'
+                });
+
+                if (error) {
+                    console.error("Error sending order:", error);
+                    alert("حدث خطأ أثناء الإرسال. تأكد من أن مسؤول الموقع قام بضبط قواعد الأمان بشكل صحيح.");
+                    loading.classList.add('hidden');
+                    loading.classList.remove('flex');
+                } else {
+                    const modalContent = document.getElementById('modalContent');
+                    modalContent.innerHTML = `
+                        <div class="text-center py-8">
+                            <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <h3 class="text-lg font-bold text-gray-900">تم إرسال طلبك بنجاح!</h3>
+                            <p class="text-sm text-gray-500 mt-2">سنتواصل معك قريباً لتأكيد الطلب.</p>
+                        </div>
+                    `;
+                    setTimeout(closeModal, 3000);
                 }
+            } else {
+                alert("عذراً، خدمة الطلب غير متوفرة حالياً (Supabase not initialized).");
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
             }
-      
-            
-            // Show a success message
-            const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = `
-                <div class="text-center py-8">
-                    <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h3 class="text-lg font-bold text-gray-900">تم إرسال طلبك بنجاح!</h3>
-                    <p class="text-sm text-gray-500 mt-2">سنتواصل معك قريباً لتأكيد الطلب.</p>
-                </div>
-            `;
-            setTimeout(closeModal, 3000);
         });
 
         async function load() {
