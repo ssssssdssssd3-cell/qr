@@ -14,5 +14,12 @@
     "description": "ماوس مريح 2.4G.",
     "image": "",
     "usage": "إلكترونيات"
+  },
+  {
+    "name": "جديد",
+    "price": 200,
+    "description": "",
+    "usage": "هه",
+    "id": 3
   }
 ]
